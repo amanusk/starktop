@@ -1,9 +1,9 @@
 use starknet::core::types::Felt;
 
-use snbeat::data::types::{
+use starktop::data::types::{
     DeployAccountTx, ExecutionStatus, InvokeTx, SnExecutionResources, SnReceipt, SnTransaction,
 };
-use snbeat::network::helpers;
+use starktop::network::helpers;
 
 fn make_receipt(fee: u64, status: ExecutionStatus) -> SnReceipt {
     SnReceipt {

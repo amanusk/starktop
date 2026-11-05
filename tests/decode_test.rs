@@ -14,8 +14,8 @@ fn provider() -> JsonRpcClient<HttpTransport> {
     JsonRpcClient::new(HttpTransport::new(Url::parse(&rpc_url).unwrap()))
 }
 
-fn parse_abi(class: &ContractClass) -> snbeat::decode::abi::ParsedAbi {
-    snbeat::decode::abi::parse_contract_class(class)
+fn parse_abi(class: &ContractClass) -> starktop::decode::abi::ParsedAbi {
+    starktop::decode::abi::parse_contract_class(class)
 }
 
 // ---- Selector computation tests (pure, no RPC) ----
@@ -190,9 +190,9 @@ async fn test_parse_strk_abi() {
 
 #[test]
 fn test_decode_event_with_abi() {
-    use snbeat::data::types::SnEvent;
-    use snbeat::decode::abi::{EventDef, FeltKey, ParsedAbi};
-    use snbeat::decode::events::decode_event;
+    use starktop::data::types::SnEvent;
+    use starktop::decode::abi::{EventDef, FeltKey, ParsedAbi};
+    use starktop::decode::events::decode_event;
 
     let transfer_selector = get_selector_from_name("Transfer").unwrap();
 
@@ -235,8 +235,8 @@ fn test_decode_event_with_abi() {
 
 #[test]
 fn test_decode_event_without_abi() {
-    use snbeat::data::types::SnEvent;
-    use snbeat::decode::events::decode_event;
+    use starktop::data::types::SnEvent;
+    use starktop::decode::events::decode_event;
 
     let event = SnEvent {
         from_address: Felt::from_hex(ETH_TOKEN).unwrap(),
@@ -259,8 +259,8 @@ fn test_decode_event_without_abi() {
 
 #[test]
 fn test_group_events_by_contract() {
-    use snbeat::data::types::SnEvent;
-    use snbeat::decode::events::{DecodedEvent, group_events_by_contract};
+    use starktop::data::types::SnEvent;
+    use starktop::decode::events::{DecodedEvent, group_events_by_contract};
 
     let eth = Felt::from_hex(ETH_TOKEN).unwrap();
     let usdc = Felt::from_hex(USDC_TOKEN).unwrap();
@@ -309,7 +309,7 @@ fn test_group_events_by_contract() {
 
 #[test]
 fn test_parse_multicall() {
-    use snbeat::decode::functions::parse_multicall;
+    use starktop::decode::functions::parse_multicall;
 
     let contract1 = Felt::from_hex("0x1111").unwrap();
     let selector1 = get_selector_from_name("transfer").unwrap();
@@ -344,7 +344,7 @@ fn test_parse_multicall() {
 
 #[test]
 fn test_parse_multicall_empty() {
-    use snbeat::decode::functions::parse_multicall;
+    use starktop::decode::functions::parse_multicall;
     assert!(parse_multicall(&[]).is_empty());
     assert!(parse_multicall(&[Felt::ZERO]).is_empty()); // 0 calls
 }
@@ -353,7 +353,7 @@ fn test_parse_multicall_empty() {
 
 #[test]
 fn test_parsed_abi_serde_roundtrip() {
-    use snbeat::decode::abi::{FeltKey, FunctionDef, ParsedAbi};
+    use starktop::decode::abi::{FeltKey, FunctionDef, ParsedAbi};
 
     let mut abi = ParsedAbi::default();
     let selector = get_selector_from_name("transfer").unwrap();
@@ -383,7 +383,7 @@ fn test_parsed_abi_serde_roundtrip() {
 
 #[test]
 fn test_raw_call_function_name_field() {
-    use snbeat::decode::functions::parse_multicall;
+    use starktop::decode::functions::parse_multicall;
 
     let contract = Felt::from_hex("0x1111").unwrap();
     let selector = get_selector_from_name("transfer").unwrap();

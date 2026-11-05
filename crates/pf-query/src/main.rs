@@ -17,7 +17,7 @@ mod decode;
 mod dto;
 
 #[derive(Parser)]
-#[command(name = "pf-query", about = "Pathfinder DB query service for snbeat")]
+#[command(name = "pf-query", about = "Pathfinder DB query service for starktop")]
 struct Config {
     /// Path to the Pathfinder SQLite database
     #[arg(long, env = "PF_DB_PATH")]
@@ -239,7 +239,7 @@ struct TxsByHashRequest {
 }
 
 /// `POST /storage-batch` request: read N storage slots from a single
-/// contract at a given block in one SQLite transaction. Used by snbeat's
+/// contract at a given block in one SQLite transaction. Used by starktop's
 /// privacy-pool sync, where a single user's note enumeration produces
 /// hundreds of deterministic slot reads against the same pool address.
 ///
@@ -872,7 +872,7 @@ fn bytes_to_hex_felt(bytes: &[u8]) -> String {
 /// GET /block-timestamps?from=N&to=M — bulk fetch block timestamps in range.
 ///
 /// Single indexed range scan on `block_headers.number`. Replaces the per-block
-/// RPC round trip in snbeat's `backfill_timestamps`.
+/// RPC round trip in starktop's `backfill_timestamps`.
 async fn handler_block_timestamps(
     Query(params): Query<BlockTimestampsParams>,
     State(state): State<AppState>,
@@ -1468,7 +1468,7 @@ async fn handler_contract_events(
 /// contract over the requested range. Skips per-block tx-hash / timestamp
 /// decoding so it can afford to scan the whole chain in a single request.
 ///
-/// Used by snbeat as an activity probe to populate labels like "(N / total)"
+/// Used by starktop as an activity probe to populate labels like "(N / total)"
 /// without depending on Dune.
 async fn handler_contract_event_count(
     Path(address): Path<String>,

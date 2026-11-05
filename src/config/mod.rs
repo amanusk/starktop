@@ -1,7 +1,7 @@
 use clap::Parser;
 
 #[derive(Parser, Clone)]
-#[command(name = "snbeat")]
+#[command(name = "starktop")]
 #[command(about = "TUI Starknet block explorer")]
 pub struct AppConfig {
     /// Starknet RPC endpoint
@@ -61,7 +61,7 @@ pub struct AppConfig {
     #[arg(long, env = "APP_LOG_LEVEL", default_value = "info")]
     pub log_level: String,
 
-    /// Directory for log files (default: ~/.config/snbeat/logs)
+    /// Directory for log files (default: ~/.config/starktop/logs)
     #[arg(long, env = "APP_LOG_DIR")]
     pub log_dir: Option<String>,
 }

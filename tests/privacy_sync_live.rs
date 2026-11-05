@@ -22,13 +22,13 @@
 
 use std::sync::Arc;
 
-use snbeat::data::DataSource;
-use snbeat::data::pathfinder::PathfinderClient;
-use snbeat::data::rpc::RpcDataSource;
-use snbeat::decode::privacy_crypto::types::SecretFelt;
-use snbeat::decode::privacy_sync::{StorageBackend, SyncResume, sync_user_notes};
-use snbeat::registry::viewing_keys::load_viewing_keys;
 use starknet::core::types::Felt;
+use starktop::data::DataSource;
+use starktop::data::pathfinder::PathfinderClient;
+use starktop::data::rpc::RpcDataSource;
+use starktop::decode::privacy_crypto::types::SecretFelt;
+use starktop::decode::privacy_sync::{StorageBackend, SyncResume, sync_user_notes};
+use starktop::registry::viewing_keys::load_viewing_keys;
 
 fn build_backend() -> StorageBackend {
     let rpc = std::env::var("APP_RPC_URL").expect("APP_RPC_URL not set");
@@ -76,7 +76,7 @@ async fn dump_synced_note_ids() {
             .filter(|n| {
                 matches!(
                     n.direction,
-                    snbeat::decode::privacy_sync::NoteDirection::Incoming
+                    starktop::decode::privacy_sync::NoteDirection::Incoming
                 ) && !n.spent
             })
             .map(|n| n.amount)
@@ -90,14 +90,14 @@ async fn dump_synced_note_ids() {
                 .iter()
                 .filter(|n| matches!(
                     n.direction,
-                    snbeat::decode::privacy_sync::NoteDirection::Incoming
+                    starktop::decode::privacy_sync::NoteDirection::Incoming
                 ) && !n.spent)
                 .count(),
         );
         for n in notes {
             let dir = match n.direction {
-                snbeat::decode::privacy_sync::NoteDirection::Incoming => "in ",
-                snbeat::decode::privacy_sync::NoteDirection::Outgoing => "out",
+                starktop::decode::privacy_sync::NoteDirection::Incoming => "in ",
+                starktop::decode::privacy_sync::NoteDirection::Outgoing => "out",
             };
             let state = if n.spent { "spent" } else { "live " };
             eprintln!(

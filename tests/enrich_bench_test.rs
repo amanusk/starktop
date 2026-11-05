@@ -11,14 +11,14 @@ use std::time::Instant;
 
 use starknet::core::types::Felt;
 
-use snbeat::data::DataSource;
-use snbeat::data::pathfinder::PathfinderClient;
-use snbeat::data::rpc::RpcDataSource;
-use snbeat::data::types::{AddressTxSummary, SnTransaction};
-use snbeat::decode::AbiRegistry;
-use snbeat::decode::class_cache::ClassCache;
-use snbeat::decode::functions::parse_multicall;
-use snbeat::network::helpers;
+use starktop::data::DataSource;
+use starktop::data::pathfinder::PathfinderClient;
+use starktop::data::rpc::RpcDataSource;
+use starktop::data::types::{AddressTxSummary, SnTransaction};
+use starktop::decode::AbiRegistry;
+use starktop::decode::class_cache::ClassCache;
+use starktop::decode::functions::parse_multicall;
+use starktop::network::helpers;
 
 fn rpc_url() -> String {
     dotenvy::dotenv().ok();
@@ -539,7 +539,7 @@ async fn bench_event_abi_prewarm() {
     for (_, sources) in &candidates {
         let abi = new_abi_registry(Arc::clone(&ds));
         let t0 = Instant::now();
-        snbeat::network::helpers::prewarm_abis(sources.iter().copied(), &abi).await;
+        starktop::network::helpers::prewarm_abis(sources.iter().copied(), &abi).await;
         // simulate the post-prewarm serial decode loop (cache hits).
         for addr in sources {
             let _ = abi.get_abi_for_address(addr).await;

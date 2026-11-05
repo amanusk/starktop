@@ -17,11 +17,11 @@ use starknet::core::types::Felt;
 use tokio::sync::mpsc;
 use tokio::time::timeout;
 
-use snbeat::app::actions::Action;
-use snbeat::app::views::address_info::AddressInfoState;
-use snbeat::data::rpc::RpcDataSource;
-use snbeat::network::HeadTracker;
-use snbeat::network::ws::spawn_ws_subscriber;
+use starktop::app::actions::Action;
+use starktop::app::views::address_info::AddressInfoState;
+use starktop::data::rpc::RpcDataSource;
+use starktop::network::HeadTracker;
+use starktop::network::ws::spawn_ws_subscriber;
 
 // ---------------------------------------------------------------------------
 // Known high-volume addresses
@@ -53,7 +53,7 @@ async fn collect_streamed_summaries(
     address: Felt,
     min_count: usize,
     timeout_secs: u64,
-) -> Vec<snbeat::data::types::AddressTxSummary> {
+) -> Vec<starktop::data::types::AddressTxSummary> {
     let mut summaries = Vec::new();
     let deadline = tokio::time::Instant::now() + Duration::from_secs(timeout_secs);
 

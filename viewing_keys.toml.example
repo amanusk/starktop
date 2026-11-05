@@ -8,7 +8,7 @@
 # Resolution order (same as labels.toml):
 #   1. APP_VIEWING_KEYS env var (if set)
 #   2. ./viewing_keys.toml (cwd)
-#   3. ~/.config/snbeat/viewing_keys.toml
+#   3. ~/.config/starktop/viewing_keys.toml
 #
 # Format:
 #   [keys]

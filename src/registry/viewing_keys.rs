@@ -13,7 +13,7 @@ use starknet::core::types::Felt;
 use tracing::{debug, warn};
 
 use crate::decode::privacy_crypto::types::SecretFelt;
-use crate::error::{Result, SnbeatError};
+use crate::error::{Result, StarktopError};
 
 #[derive(Debug, Default, Deserialize)]
 pub struct ViewingKeysFile {
@@ -45,7 +45,7 @@ pub fn load_viewing_keys(path: &Path) -> Result<(Vec<ViewingKey>, Option<String>
     }
 
     let content = std::fs::read_to_string(path)
-        .map_err(|e| SnbeatError::Config(format!("Failed to read viewing keys file: {e}")))?;
+        .map_err(|e| StarktopError::Config(format!("Failed to read viewing keys file: {e}")))?;
 
     let file: ViewingKeysFile = match toml::from_str(&content) {
         Ok(f) => f,
@@ -116,7 +116,7 @@ mod tests {
 
     #[test]
     fn missing_file_is_ok() {
-        let path = Path::new("/tmp/snbeat-nonexistent-viewing-keys.toml");
+        let path = Path::new("/tmp/starktop-nonexistent-viewing-keys.toml");
         let (keys, warn) = load_viewing_keys(path).unwrap();
         assert!(keys.is_empty());
         assert!(warn.is_none());

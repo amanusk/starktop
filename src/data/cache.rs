@@ -21,7 +21,7 @@ type DbPool = Pool<SqliteConnectionManager>;
 #[allow(unused_imports)]
 use super::types::*;
 use super::{DataSource, FilterKind};
-use crate::error::{Result, SnbeatError};
+use crate::error::{Result, StarktopError};
 
 /// A block/transaction finality status is final (immutable) once it reaches
 /// L1. Anything else ("ACCEPTED_ON_L2", "PRE_CONFIRMED", or an empty status
@@ -32,7 +32,7 @@ fn is_final_status(status: &str) -> bool {
 }
 
 /// Shared future output: errors are stringified so the future is `Clone`-able
-/// (SnbeatError is not Clone due to `std::io::Error`).
+/// (StarktopError is not Clone due to `std::io::Error`).
 type SharedTxFut =
     Shared<Pin<Box<dyn Future<Output = std::result::Result<SnTransaction, String>> + Send>>>;
 type SharedRxFut =
@@ -81,10 +81,10 @@ impl CachingDataSource {
         let pool = Pool::builder()
             .max_size(8)
             .build(manager)
-            .map_err(|e| SnbeatError::Config(format!("Failed to build cache db pool: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("Failed to build cache db pool: {e}")))?;
         let db = pool
             .get()
-            .map_err(|e| SnbeatError::Config(format!("Failed to open cache db: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("Failed to open cache db: {e}")))?;
 
         // Create tables
         db.execute_batch(
@@ -285,7 +285,7 @@ impl CachingDataSource {
             );
             ",
         )
-        .map_err(|e| SnbeatError::Config(format!("Failed to init cache schema: {e}")))?;
+        .map_err(|e| StarktopError::Config(format!("Failed to init cache schema: {e}")))?;
 
         // --- Migrations (keyed on PRAGMA user_version) ---
         let version: i64 = db
@@ -303,7 +303,7 @@ impl CachingDataSource {
                  DELETE FROM deploy_info;
                  PRAGMA user_version = 4;",
             )
-            .map_err(|e| SnbeatError::Config(format!("Migration v4 failed: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("Migration v4 failed: {e}")))?;
             debug!("Migration v4: cleared tx/block/address caches");
         }
 
@@ -316,7 +316,7 @@ impl CachingDataSource {
             // The CREATE TABLE IF NOT EXISTS above is the DDL; nothing else to
             // do for existing DBs — just bump the version.
             db.execute("PRAGMA user_version = 5", []).map_err(|e| {
-                SnbeatError::Config(format!("Migration v5 version bump failed: {e}"))
+                StarktopError::Config(format!("Migration v5 version bump failed: {e}"))
             })?;
             debug!("Migration v5: added address_activity_total table");
         }
@@ -346,7 +346,7 @@ impl CachingDataSource {
                      RENAME TO address_search_progress;
                  PRAGMA user_version = 6;",
             )
-            .map_err(|e| SnbeatError::Config(format!("Migration v6 failed: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("Migration v6 failed: {e}")))?;
             debug!("Migration v6: split address_search_progress by filter_kind");
         }
 
@@ -356,7 +356,7 @@ impl CachingDataSource {
             // pf-query the cached rows replay deployment + class-upgrade info
             // so the address view doesn't regress.
             db.execute("PRAGMA user_version = 7", []).map_err(|e| {
-                SnbeatError::Config(format!("Migration v7 version bump failed: {e}"))
+                StarktopError::Config(format!("Migration v7 version bump failed: {e}"))
             })?;
             debug!("Migration v7: added class_history table");
         }
@@ -369,7 +369,7 @@ impl CachingDataSource {
             // watermark alone, so the next pf-enabled visit can detect (via
             // class-hash divergence) that gaps may exist and refetch.
             db.execute("PRAGMA user_version = 8", []).map_err(|e| {
-                SnbeatError::Config(format!("Migration v8 version bump failed: {e}"))
+                StarktopError::Config(format!("Migration v8 version bump failed: {e}"))
             })?;
             debug!("Migration v8: added class_history_meta table");
         }
@@ -382,7 +382,7 @@ impl CachingDataSource {
             // every tx open. The CREATE TABLE IF NOT EXISTS lines above
             // handle DDL; nothing to migrate from older rows.
             db.execute("PRAGMA user_version = 9", []).map_err(|e| {
-                SnbeatError::Config(format!("Migration v9 version bump failed: {e}"))
+                StarktopError::Config(format!("Migration v9 version bump failed: {e}"))
             })?;
             debug!("Migration v9: added private_notes + private_notes_sync tables");
         }
@@ -394,7 +394,7 @@ impl CachingDataSource {
             // correctly across restarts without re-fetching every cold
             // start. CREATE TABLE IF NOT EXISTS above handles DDL.
             db.execute("PRAGMA user_version = 10", []).map_err(|e| {
-                SnbeatError::Config(format!("Migration v10 version bump failed: {e}"))
+                StarktopError::Config(format!("Migration v10 version bump failed: {e}"))
             })?;
             debug!("Migration v10: added token_metadata table");
         }
@@ -431,7 +431,7 @@ impl CachingDataSource {
                      ON private_nullifiers(user);
                  PRAGMA user_version = 11;",
             )
-            .map_err(|e| SnbeatError::Config(format!("Migration v11 failed: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("Migration v11 failed: {e}")))?;
             debug!("Migration v11: reshaped private_notes + added private_nullifiers");
         }
 
@@ -444,7 +444,7 @@ impl CachingDataSource {
                 [],
                 |r| r.get(0),
             )
-            .map_err(|e| SnbeatError::Config(format!("address_calls table_info: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("address_calls table_info: {e}")))?;
         if has_tx_hash == 0 {
             let t0 = std::time::Instant::now();
             db.execute_batch(
@@ -465,7 +465,7 @@ impl CachingDataSource {
                  ALTER TABLE address_calls_v2 RENAME TO address_calls;
                  COMMIT;",
             )
-            .map_err(|e| SnbeatError::Config(format!("address_calls re-key failed: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("address_calls re-key failed: {e}")))?;
             info!(
                 elapsed_ms = t0.elapsed().as_millis(),
                 "Re-keyed address_calls by tx hash"
@@ -480,10 +480,10 @@ impl CachingDataSource {
                 [],
                 |r| r.get(0),
             )
-            .map_err(|e| SnbeatError::Config(format!("address_events table_info: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("address_events table_info: {e}")))?;
         if events_has_tx_hash == 0 {
             // Runs before the TUI starts; on a large cache it takes tens of seconds.
-            eprintln!("snbeat: upgrading the event cache (one-time)...");
+            eprintln!("starktop: upgrading the event cache (one-time)...");
             let t0 = std::time::Instant::now();
             db.execute_batch(
                 "BEGIN;
@@ -510,7 +510,7 @@ impl CachingDataSource {
                  ALTER TABLE address_events_v2 RENAME TO address_events;
                  COMMIT;",
             )
-            .map_err(|e| SnbeatError::Config(format!("address_events re-key failed: {e}")))?;
+            .map_err(|e| StarktopError::Config(format!("address_events re-key failed: {e}")))?;
             info!(
                 elapsed_ms = t0.elapsed().as_millis(),
                 "Re-keyed address_events per event"
@@ -1464,7 +1464,7 @@ impl DataSource for CachingDataSource {
                 self.cache_transaction(&tx);
                 Ok(tx)
             }
-            Err(e) => Err(SnbeatError::Rpc(e)),
+            Err(e) => Err(StarktopError::Rpc(e)),
         }
     }
 
@@ -1505,7 +1505,7 @@ impl DataSource for CachingDataSource {
                 self.cache_receipt(&receipt);
                 Ok(receipt)
             }
-            Err(e) => Err(SnbeatError::Rpc(e)),
+            Err(e) => Err(StarktopError::Rpc(e)),
         }
     }
 
@@ -1602,7 +1602,7 @@ impl DataSource for CachingDataSource {
                 self.cache_trace(hash, &fetched);
                 Ok(fetched)
             }
-            Err(e) => Err(SnbeatError::Rpc(e)),
+            Err(e) => Err(StarktopError::Rpc(e)),
         }
     }
 
@@ -3019,14 +3019,14 @@ mod tests {
         assert!(ds.load_address_events(&Felt::from(1_u64)).is_empty());
     }
 
-    /// Opens an external cache.db snapshot via env var `SNBEAT_TEST_CACHE_DB`
+    /// Opens an external cache.db snapshot via env var `STARKTOP_TEST_CACHE_DB`
     /// and runs the migration. Used to verify v11 against a real production
     /// snapshot. Ignored by default — set the env var to invoke it.
     #[test]
     #[ignore]
     fn external_cache_migration_smoke() {
-        let path = std::env::var("SNBEAT_TEST_CACHE_DB")
-            .expect("set SNBEAT_TEST_CACHE_DB to a snapshot path");
+        let path = std::env::var("STARKTOP_TEST_CACHE_DB")
+            .expect("set STARKTOP_TEST_CACHE_DB to a snapshot path");
         let p = std::path::PathBuf::from(path);
         let _ds = CachingDataSource::new(Arc::new(NullUpstream), &p).expect("open + migrate");
     }

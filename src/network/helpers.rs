@@ -329,7 +329,7 @@ pub fn build_tx_summary(
     }
 }
 
-/// Normalize a pf-query tx_type (e.g. "INVOKE_V3") to snbeat's canonical
+/// Normalize a pf-query tx_type (e.g. "INVOKE_V3") to starktop's canonical
 /// form (e.g. "INVOKE"). pf returns a versioned string; `SnTransaction::type_name()`
 /// strips the version. Leaves `L1_HANDLER` as-is.
 pub fn normalize_pf_tx_type(pf_type: &str) -> String {

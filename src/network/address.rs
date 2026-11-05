@@ -208,7 +208,7 @@ pub(super) async fn fetch_events_routed(
             }
         };
         res.map(|(events, _token)| events)
-            .map_err(|e| crate::error::SnbeatError::Provider(e.to_string()))
+            .map_err(|e| crate::error::StarktopError::Provider(e.to_string()))
     }
 
     async fn from_ds(
@@ -326,7 +326,7 @@ pub(crate) async fn fetch_address_activity(
         EventQueryKind::Account => pf
             .get_events_for_address(address, from_block, to_block, limit, continuation_token)
             .await
-            .map_err(|e| crate::error::SnbeatError::Provider(e.to_string()))?,
+            .map_err(|e| crate::error::StarktopError::Provider(e.to_string()))?,
         EventQueryKind::Contract => pf
             .get_contract_events(
                 address,
@@ -337,7 +337,7 @@ pub(crate) async fn fetch_address_activity(
                 continuation_token,
             )
             .await
-            .map_err(|e| crate::error::SnbeatError::Provider(e.to_string()))?,
+            .map_err(|e| crate::error::StarktopError::Provider(e.to_string()))?,
     };
 
     // 2. Dedupe tx hashes, preserve first-seen order (pf returns newest-first).
@@ -359,7 +359,7 @@ pub(crate) async fn fetch_address_activity(
     } else {
         pf.get_txs_by_hash(&unique_hashes)
             .await
-            .map_err(|e| crate::error::SnbeatError::Provider(e.to_string()))?
+            .map_err(|e| crate::error::StarktopError::Provider(e.to_string()))?
     };
 
     Ok(AddressActivityPage {

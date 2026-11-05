@@ -1,7 +1,7 @@
 use starknet::core::types::Felt;
 
-use snbeat::app::views::AddressInfoState;
-use snbeat::data::types::AddressTxSummary;
+use starktop::app::views::AddressInfoState;
+use starktop::data::types::AddressTxSummary;
 
 fn make_summary(
     hash: u64,

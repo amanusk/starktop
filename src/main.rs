@@ -47,11 +47,11 @@ fn init_logging(config: &AppConfig) -> tracing_appender::non_blocking::WorkerGua
         .log_dir
         .as_deref()
         .map(std::path::PathBuf::from)
-        .unwrap_or_else(|| snbeat_config_dir().join("logs"));
+        .unwrap_or_else(|| starktop_config_dir().join("logs"));
 
     std::fs::create_dir_all(&log_dir).expect("Failed to create log directory");
 
-    let file_appender = tracing_appender::rolling::daily(&log_dir, "snbeat.log");
+    let file_appender = tracing_appender::rolling::daily(&log_dir, "starktop.log");
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 
     let filter =
@@ -81,9 +81,13 @@ fn main() -> anyhow::Result<()> {
 }
 
 async fn run() -> anyhow::Result<()> {
-    // Load .env: try CWD first, then ~/.config/snbeat/.env
+    // Must run before anything (logging, cache) creates the new config dir.
+    let legacy_migration = dirs::config_dir()
+        .and_then(|base| move_dir_if_absent(&base.join("snbeat"), &base.join("starktop")));
+
+    // Load .env: try CWD first, then ~/.config/starktop/.env
     if dotenvy::dotenv().is_err() {
-        let global_env = snbeat_config_dir().join(".env");
+        let global_env = starktop_config_dir().join(".env");
         if global_env.exists() {
             dotenvy::from_path(&global_env).ok();
         }
@@ -92,13 +96,18 @@ async fn run() -> anyhow::Result<()> {
     let config = AppConfig::parse();
     let _log_guard = init_logging(&config);
 
-    info!(rpc_url = %config.rpc_url, ws_url = ?config.ws_url, "snbeat starting");
+    info!(rpc_url = %config.rpc_url, ws_url = ?config.ws_url, "starktop starting");
+    match legacy_migration {
+        Some(Ok(())) => info!("Moved legacy ~/.config/snbeat to ~/.config/starktop"),
+        Some(Err(e)) => warn!(error = %e, "Failed to move legacy ~/.config/snbeat"),
+        None => {}
+    }
 
     // Startup checks
     startup_checks(&config)?;
 
     // Setup cache directory
-    let cache_dir = snbeat_config_dir();
+    let cache_dir = starktop_config_dir();
     std::fs::create_dir_all(&cache_dir)?;
     let cache_db = cache_dir.join("cache.db");
     info!(cache_db = %cache_db.display(), "Using local cache");
@@ -493,7 +502,7 @@ async fn run() -> anyhow::Result<()> {
     )?;
     terminal.show_cursor()?;
 
-    info!("snbeat exiting");
+    info!("starktop exiting");
     result
 }
 
@@ -675,16 +684,21 @@ fn log_action(action: &Action) {
     }
 }
 
-fn snbeat_config_dir() -> std::path::PathBuf {
+/// Carries cache, labels and keys over from the pre-rename `snbeat` config dir.
+fn move_dir_if_absent(old: &std::path::Path, new: &std::path::Path) -> Option<io::Result<()>> {
+    (old.is_dir() && !new.exists()).then(|| std::fs::rename(old, new))
+}
+
+fn starktop_config_dir() -> std::path::PathBuf {
     if let Some(config_dir) = dirs::config_dir() {
-        config_dir.join("snbeat")
+        config_dir.join("starktop")
     } else {
-        std::path::PathBuf::from(".snbeat")
+        std::path::PathBuf::from(".starktop")
     }
 }
 
 /// Resolve a config file path: if the user set a custom value, use it as-is.
-/// Otherwise (default), try CWD first, then fall back to ~/.config/snbeat/.
+/// Otherwise (default), try CWD first, then fall back to ~/.config/starktop/.
 fn resolve_config_file(configured: &str, default_name: &str) -> std::path::PathBuf {
     let path = std::path::PathBuf::from(configured);
     // User explicitly set a path (not the default) — use as-is
@@ -695,7 +709,7 @@ fn resolve_config_file(configured: &str, default_name: &str) -> std::path::PathB
     if path.exists() {
         path
     } else {
-        let global = snbeat_config_dir().join(default_name);
+        let global = starktop_config_dir().join(default_name);
         if global.exists() { global } else { path }
     }
 }
@@ -707,7 +721,7 @@ fn startup_checks(config: &AppConfig) -> anyhow::Result<()> {
     // Check RPC URL is set and looks valid
     if config.rpc_url.is_empty() {
         anyhow::bail!(
-            "APP_RPC_URL is required. Set it in .env, ~/.config/snbeat/.env, or pass --rpc-url"
+            "APP_RPC_URL is required. Set it in .env, ~/.config/starktop/.env, or pass --rpc-url"
         );
     }
     if !config.rpc_url.starts_with("http://") && !config.rpc_url.starts_with("https://") {
@@ -729,7 +743,7 @@ fn startup_checks(config: &AppConfig) -> anyhow::Result<()> {
     }
 
     // Check config directory is writable
-    let config_dir = snbeat_config_dir();
+    let config_dir = starktop_config_dir();
     if let Err(e) = std::fs::create_dir_all(&config_dir) {
         anyhow::bail!(
             "Cannot create config directory {}: {}",
@@ -776,7 +790,7 @@ fn startup_checks(config: &AppConfig) -> anyhow::Result<()> {
     let labels_path = resolve_config_file(&config.user_labels, "labels.toml");
     if !labels_path.exists() {
         warnings
-            .push("User labels file not found — create labels.toml in CWD or ~/.config/snbeat/");
+            .push("User labels file not found — create labels.toml in CWD or ~/.config/starktop/");
     }
 
     // Log warnings
@@ -794,4 +808,27 @@ fn startup_checks(config: &AppConfig) -> anyhow::Result<()> {
     );
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::move_dir_if_absent;
+
+    #[test]
+    fn legacy_config_dir_moves_once() {
+        let base = tempfile::tempdir().unwrap();
+        let (old, new) = (base.path().join("snbeat"), base.path().join("starktop"));
+        assert!(move_dir_if_absent(&old, &new).is_none());
+
+        std::fs::create_dir(&old).unwrap();
+        std::fs::write(old.join("cache.db"), b"x").unwrap();
+        assert!(move_dir_if_absent(&old, &new).unwrap().is_ok());
+        assert!(!old.exists());
+        assert_eq!(std::fs::read(new.join("cache.db")).unwrap(), b"x");
+
+        // An existing new dir is never clobbered.
+        std::fs::create_dir(&old).unwrap();
+        assert!(move_dir_if_absent(&old, &new).is_none());
+        assert!(old.exists());
+    }
 }

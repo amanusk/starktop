@@ -164,13 +164,13 @@ impl QueryShape {
     /// Display name to register the query under in Dune.
     fn display_name(self) -> &'static str {
         match self {
-            QueryShape::ProbeAddressActivity => "snbeat_probe_address_activity",
-            QueryShape::ProbeActivityDelta => "snbeat_probe_address_activity_delta",
-            QueryShape::AccountTxs => "snbeat_account_txs",
-            QueryShape::AccountTxsWindowed => "snbeat_account_txs_windowed",
-            QueryShape::ContractCallsWindowed => "snbeat_contract_calls_windowed",
-            QueryShape::ContractMetaTxCallsWindowed => "snbeat_contract_meta_tx_calls_windowed",
-            QueryShape::DeclareTx => "snbeat_declare_tx",
+            QueryShape::ProbeAddressActivity => "starktop_probe_address_activity",
+            QueryShape::ProbeActivityDelta => "starktop_probe_address_activity_delta",
+            QueryShape::AccountTxs => "starktop_account_txs",
+            QueryShape::AccountTxsWindowed => "starktop_account_txs_windowed",
+            QueryShape::ContractCallsWindowed => "starktop_contract_calls_windowed",
+            QueryShape::ContractMetaTxCallsWindowed => "starktop_contract_meta_tx_calls_windowed",
+            QueryShape::DeclareTx => "starktop_declare_tx",
         }
     }
 
@@ -1253,7 +1253,7 @@ impl DuneClient {
     /// Execute arbitrary SQL and return result rows.
     async fn execute_sql(&self, sql: &str) -> Result<Vec<serde_json::Value>, String> {
         let create_body = serde_json::json!({
-            "name": format!("snbeat_{}", chrono::Utc::now().timestamp()),
+            "name": format!("starktop_{}", chrono::Utc::now().timestamp()),
             "query_sql": sql,
             "is_private": self.is_private
         });

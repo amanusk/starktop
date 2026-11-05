@@ -3,7 +3,7 @@
 //! Run with: cargo test --test populate_selectors -- --ignored --nocapture
 //!
 //! This fetches class ABIs for every address in labels.toml + bundled known addresses,
-//! parses them, and writes all function/event selectors to ~/.config/snbeat/cache.db.
+//! parses them, and writes all function/event selectors to ~/.config/starktop/cache.db.
 //! After running, the explorer will show decoded names without needing RPC lookups.
 
 use std::collections::HashSet;
@@ -27,8 +27,8 @@ fn provider() -> Arc<JsonRpcClient<HttpTransport>> {
 
 fn cache_db() -> Connection {
     let path = dirs::config_dir()
-        .map(|d| d.join("snbeat").join("cache.db"))
-        .unwrap_or_else(|| std::path::PathBuf::from(".snbeat/cache.db"));
+        .map(|d| d.join("starktop").join("cache.db"))
+        .unwrap_or_else(|| std::path::PathBuf::from(".starktop/cache.db"));
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     let db = Connection::open(&path).expect("Failed to open cache.db");
     db.execute_batch(
@@ -56,7 +56,7 @@ fn insert_selector(db: &Connection, selector: Felt, name: &str) -> bool {
     .unwrap_or(false)
 }
 
-fn insert_abi(db: &Connection, class_hash: Felt, abi: &snbeat::decode::abi::ParsedAbi) {
+fn insert_abi(db: &Connection, class_hash: Felt, abi: &starktop::decode::abi::ParsedAbi) {
     if let Ok(json) = serde_json::to_string(abi) {
         let hex = format!("{:#x}", class_hash);
         let _ = db.execute(
@@ -74,7 +74,7 @@ fn collect_all_addresses() -> Vec<(Felt, String)> {
     // Load from labels.toml
     let labels_path = Path::new("labels.toml");
     if labels_path.exists()
-        && let Ok((labels, _, _)) = snbeat::registry::user_labels::load_user_labels(labels_path)
+        && let Ok((labels, _, _)) = starktop::registry::user_labels::load_user_labels(labels_path)
     {
         for label in labels {
             if seen.insert(label.address) {
@@ -84,7 +84,7 @@ fn collect_all_addresses() -> Vec<(Felt, String)> {
     }
 
     // Load bundled known addresses
-    if let Ok(known) = snbeat::registry::known_addresses::load_known_addresses() {
+    if let Ok(known) = starktop::registry::known_addresses::load_known_addresses() {
         for addr in known {
             if seen.insert(addr.address) {
                 addresses.push((addr.address, addr.name));
@@ -383,7 +383,7 @@ async fn populate_selectors() {
         for (class_hash, name, result) in results {
             match result {
                 Ok(class) => {
-                    let abi = snbeat::decode::abi::parse_contract_class(&class);
+                    let abi = starktop::decode::abi::parse_contract_class(&class);
                     let mut count = 0;
                     for (key, func) in &abi.functions {
                         if insert_selector(&db, key.0, &func.name) {

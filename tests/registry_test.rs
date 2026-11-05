@@ -13,7 +13,7 @@ fn make_user_labels(content: &str) -> tempfile::NamedTempFile {
 
 #[test]
 fn test_load_bundled_known_addresses() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"), // no user labels
         std::path::Path::new("/dev/null"), // no viewing keys
     )
@@ -38,7 +38,7 @@ fn test_user_labels_override_known() {
     ));
 
     let registry =
-        snbeat::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
+        starktop::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
             .unwrap()
             .0;
 
@@ -48,7 +48,7 @@ fn test_user_labels_override_known() {
 
 #[test]
 fn test_search_prefix_match() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"),
         std::path::Path::new("/dev/null"),
     )
@@ -65,7 +65,7 @@ fn test_search_prefix_match() {
 
 #[test]
 fn test_search_substring_match() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"),
         std::path::Path::new("/dev/null"),
     )
@@ -85,7 +85,7 @@ fn test_search_substring_match() {
 
 #[test]
 fn test_search_hex_prefix() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"),
         std::path::Path::new("/dev/null"),
     )
@@ -100,7 +100,7 @@ fn test_search_hex_prefix() {
 
 #[test]
 fn test_search_empty_returns_nothing() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"),
         std::path::Path::new("/dev/null"),
     )
@@ -112,7 +112,7 @@ fn test_search_empty_returns_nothing() {
 
 #[test]
 fn test_search_limit() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"),
         std::path::Path::new("/dev/null"),
     )
@@ -126,7 +126,7 @@ fn test_search_limit() {
 
 #[test]
 fn test_resolve_by_name() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"),
         std::path::Path::new("/dev/null"),
     )
@@ -141,7 +141,7 @@ fn test_resolve_by_name() {
 
 #[test]
 fn test_format_address() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"),
         std::path::Path::new("/dev/null"),
     )
@@ -166,7 +166,7 @@ fn test_resolve_tx_label() {
     );
 
     let registry =
-        snbeat::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
+        starktop::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
             .unwrap()
             .0;
 
@@ -189,7 +189,7 @@ fn test_tx_label_appears_in_search() {
     );
 
     let registry =
-        snbeat::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
+        starktop::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
             .unwrap()
             .0;
 
@@ -198,7 +198,7 @@ fn test_tx_label_appears_in_search() {
     assert!(results[0].is_user);
     assert!(results[0].display.contains("60M STRK deposit"));
     assert!(
-        matches!(results[0].kind, snbeat::registry::EntryKind::Transaction),
+        matches!(results[0].kind, starktop::registry::EntryKind::Transaction),
         "result kind should be Transaction"
     );
 
@@ -215,7 +215,7 @@ fn test_tx_label_appears_in_search() {
 fn test_corrupted_labels_returns_warning() {
     let labels = make_user_labels("[transactions]\nthis is not toml = broken");
     let (_reg, warnings) =
-        snbeat::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
+        starktop::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
             .unwrap();
     assert!(!warnings.is_empty());
 }
@@ -231,7 +231,7 @@ fn test_invalid_tx_hash_entry_is_skipped() {
     );
 
     let (registry, warnings) =
-        snbeat::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
+        starktop::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
             .unwrap();
     assert!(
         warnings.is_empty(),
@@ -246,7 +246,7 @@ fn test_invalid_tx_hash_entry_is_skipped() {
 
 #[test]
 fn test_get_decimals() {
-    let registry = snbeat::registry::AddressRegistry::load(
+    let registry = starktop::registry::AddressRegistry::load(
         std::path::Path::new("/dev/null"),
         std::path::Path::new("/dev/null"),
     )
@@ -272,7 +272,7 @@ fn test_privacy_classification_survives_user_label_override() {
 "#
     ));
     let registry =
-        snbeat::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
+        starktop::registry::AddressRegistry::load(labels.path(), std::path::Path::new("/dev/null"))
             .unwrap()
             .0;
 
@@ -301,7 +301,7 @@ fn test_viewing_key_lookup_by_user() {
     )
     .unwrap();
     let registry =
-        snbeat::registry::AddressRegistry::load(std::path::Path::new("/dev/null"), keys.path())
+        starktop::registry::AddressRegistry::load(std::path::Path::new("/dev/null"), keys.path())
             .unwrap()
             .0;
     assert!(registry.viewing_key(&Felt::from(0x1234u64)).is_some());

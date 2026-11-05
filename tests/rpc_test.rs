@@ -121,10 +121,10 @@ async fn test_balance_of_call() {
 #[tokio::test]
 #[ignore = "requires APP_RPC_URL"]
 async fn test_trace_transaction_decode() {
-    use snbeat::data::DataSource;
-    use snbeat::data::rpc::RpcDataSource;
-    use snbeat::decode::AbiRegistry;
-    use snbeat::decode::class_cache::ClassCache;
+    use starktop::data::DataSource;
+    use starktop::data::rpc::RpcDataSource;
+    use starktop::decode::AbiRegistry;
+    use starktop::decode::class_cache::ClassCache;
     use std::sync::Arc;
 
     dotenvy::dotenv().ok();
@@ -144,7 +144,7 @@ async fn test_trace_transaction_decode() {
 
     let receipt = ds.get_receipt(hash).await.expect("receipt failed");
     let block = receipt.block_number;
-    let decoded = snbeat::decode::trace::decode_trace(&trace, hash, block, &abi_reg).await;
+    let decoded = starktop::decode::trace::decode_trace(&trace, hash, block, &abi_reg).await;
 
     let mut total = 0usize;
     decoded.for_each_call(|_| total += 1);

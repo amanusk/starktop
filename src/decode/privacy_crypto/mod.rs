@@ -12,7 +12,7 @@
 //! `starknet-rust = 0.19`.
 //!
 //! When upstream changes, regenerate from the same commit and re-run
-//! `cargo test -p snbeat decode::privacy_crypto`.
+//! `cargo test -p starktop decode::privacy_crypto`.
 
 pub mod decryption;
 pub mod hashes;

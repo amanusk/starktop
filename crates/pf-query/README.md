@@ -2,7 +2,7 @@
 
 A small HTTP service that exposes a [Pathfinder](https://github.com/eqlabs/pathfinder) node's
 SQLite database as a JSON API. It powers the fast lookups used by
-[snbeat](https://github.com/amanusk/snbeat) (nonce history, contract events,
+[starktop](https://github.com/amanusk/starktop) (nonce history, contract events,
 account transaction history, storage batch reads, etc.) but works as a
 standalone service for any client that wants cheap, indexed access to a
 Pathfinder DB without going through the node's RPC.
@@ -35,8 +35,8 @@ cargo install pf-query
 From source:
 
 ```bash
-git clone https://github.com/amanusk/snbeat
-cd snbeat
+git clone https://github.com/amanusk/starktop
+cd starktop
 cargo build --release --manifest-path crates/pf-query/Cargo.toml
 ```
 
