@@ -81,10 +81,6 @@ fn main() -> anyhow::Result<()> {
 }
 
 async fn run() -> anyhow::Result<()> {
-    // Must run before anything (logging, cache) creates the new config dir.
-    let legacy_migration = dirs::config_dir()
-        .and_then(|base| move_dir_if_absent(&base.join("snbeat"), &base.join("starktop")));
-
     // Load .env: try CWD first, then ~/.config/starktop/.env
     if dotenvy::dotenv().is_err() {
         let global_env = starktop_config_dir().join(".env");
@@ -97,11 +93,6 @@ async fn run() -> anyhow::Result<()> {
     let _log_guard = init_logging(&config);
 
     info!(rpc_url = %config.rpc_url, ws_url = ?config.ws_url, "starktop starting");
-    match legacy_migration {
-        Some(Ok(())) => info!("Moved legacy ~/.config/snbeat to ~/.config/starktop"),
-        Some(Err(e)) => warn!(error = %e, "Failed to move legacy ~/.config/snbeat"),
-        None => {}
-    }
 
     // Startup checks
     startup_checks(&config)?;
@@ -684,11 +675,6 @@ fn log_action(action: &Action) {
     }
 }
 
-/// Carries cache, labels and keys over from the pre-rename `snbeat` config dir.
-fn move_dir_if_absent(old: &std::path::Path, new: &std::path::Path) -> Option<io::Result<()>> {
-    (old.is_dir() && !new.exists()).then(|| std::fs::rename(old, new))
-}
-
 fn starktop_config_dir() -> std::path::PathBuf {
     if let Some(config_dir) = dirs::config_dir() {
         config_dir.join("starktop")
@@ -808,27 +794,4 @@ fn startup_checks(config: &AppConfig) -> anyhow::Result<()> {
     );
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::move_dir_if_absent;
-
-    #[test]
-    fn legacy_config_dir_moves_once() {
-        let base = tempfile::tempdir().unwrap();
-        let (old, new) = (base.path().join("snbeat"), base.path().join("starktop"));
-        assert!(move_dir_if_absent(&old, &new).is_none());
-
-        std::fs::create_dir(&old).unwrap();
-        std::fs::write(old.join("cache.db"), b"x").unwrap();
-        assert!(move_dir_if_absent(&old, &new).unwrap().is_ok());
-        assert!(!old.exists());
-        assert_eq!(std::fs::read(new.join("cache.db")).unwrap(), b"x");
-
-        // An existing new dir is never clobbered.
-        std::fs::create_dir(&old).unwrap();
-        assert!(move_dir_if_absent(&old, &new).is_none());
-        assert!(old.exists());
-    }
 }

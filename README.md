@@ -2,8 +2,6 @@
 
 starktop is a local, terminal based, Block explorer for the Starknet Blockchain. It supports multiple data sources, to give the best experience, while prioritizing privacy, recency and caching.
 
-> Formerly **snbeat**. On first run, starktop moves an existing `~/.config/snbeat/` (cache, labels, `.env`, viewing keys) to `~/.config/starktop/`.
-
 <table>
   <tr>
     <td><strong>Block Detail</strong><br><img src="screenshots/block_detail.png" alt="Block detail view" width="400" height="300"></td>
