@@ -1,4 +1,4 @@
-# snbeat user labels — tag addresses and transactions with human-readable names
+# starktop user labels — tag addresses and transactions with human-readable names
 # User labels take priority over the built-in known.toml registry.
 #
 # Copy this file to labels.toml and customize it:

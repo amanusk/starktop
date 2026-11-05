@@ -1,9 +1,9 @@
 use starknet::core::types::Felt;
 use tokio::sync::mpsc;
 
-use snbeat::app::App;
-use snbeat::app::actions::Action;
-use snbeat::app::state::{NavTarget, View};
+use starktop::app::App;
+use starktop::app::actions::Action;
+use starktop::app::state::{NavTarget, View};
 
 fn make_app() -> (App, mpsc::UnboundedReceiver<Action>) {
     let (tx, rx) = mpsc::unbounded_channel();
@@ -76,7 +76,7 @@ fn navigate_clears_visual_modes() {
 #[test]
 fn navigate_forward_replays_history() {
     let (mut app, _rx) = make_app();
-    app.forward_history.push(snbeat::app::NavEntry::Block(5));
+    app.forward_history.push(starktop::app::NavEntry::Block(5));
 
     let action = app.navigate_forward();
     assert!(matches!(
@@ -115,7 +115,7 @@ fn go_to_root_or_quit_at_root_quits() {
 
 #[test]
 fn nav_target_from_nav_item_converts_correctly() {
-    use snbeat::app::state::TxNavItem;
+    use starktop::app::state::TxNavItem;
 
     let addr = Felt::from(0x1u64);
     assert_eq!(

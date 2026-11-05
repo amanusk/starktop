@@ -38,7 +38,7 @@ use crate::decode::privacy_crypto::storage_slots;
 use crate::decode::privacy_crypto::types::{
     ChannelInfo, EncChannelInfo, EncOutgoingChannelInfo, EncSubchannelInfo, SecretFelt,
 };
-use crate::error::{Result, SnbeatError};
+use crate::error::{Result, StarktopError};
 use crate::utils::felt_to_u64;
 
 /// Cap on enumerated channels per user. 1024 is well above any realistic
@@ -284,7 +284,7 @@ impl StorageBackend {
                 return Ok((Vec::new(), bn));
             }
             let bn = self.data_source.latest_block_hint().await.ok_or_else(|| {
-                SnbeatError::Provider("latest_block_hint: no chain head available".into())
+                StarktopError::Provider("latest_block_hint: no chain head available".into())
             })?;
             return Ok((Vec::new(), bn));
         }
@@ -306,7 +306,7 @@ impl StorageBackend {
         // RPC fallback: chunked JSON-RPC batches via
         // `starknet_getStorageAt`. One HTTP roundtrip per chunk.
         let bn = self.data_source.latest_block_hint().await.ok_or_else(|| {
-            SnbeatError::Provider("latest_block_hint: no chain head available".into())
+            StarktopError::Provider("latest_block_hint: no chain head available".into())
         })?;
         let mut out = Vec::with_capacity(keys.len());
         for chunk in keys.chunks(RPC_BATCH_CHUNK) {
@@ -400,7 +400,7 @@ async fn sync_incoming(
     }
     let (channel_values, _) = backend.read_slots(&channel_keys_slots).await?;
     if channel_values.len() != channel_keys_slots.len() {
-        return Err(SnbeatError::Provider(format!(
+        return Err(StarktopError::Provider(format!(
             "Storage backend returned {} values for {} keys",
             channel_values.len(),
             channel_keys_slots.len()
@@ -784,7 +784,7 @@ async fn sync_outgoing(
         .collect();
     let (pk_values, block_number) = backend.read_slots(&pk_slots).await?;
     if pk_values.len() != pk_slots.len() {
-        return Err(SnbeatError::Provider(format!(
+        return Err(StarktopError::Provider(format!(
             "Storage backend returned {} pubkey values for {} recipients",
             pk_values.len(),
             pk_slots.len()

@@ -1,6 +1,6 @@
 use starknet::core::types::Felt;
 
-use snbeat::data::types::{ContractCallSummary, deduplicate_contract_calls};
+use starktop::data::types::{ContractCallSummary, deduplicate_contract_calls};
 
 fn make_call(tx_hash: u64, sender: u64, function_name: &str, block: u64) -> ContractCallSummary {
     ContractCallSummary {

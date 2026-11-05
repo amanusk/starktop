@@ -3,9 +3,9 @@ use starknet::core::utils::get_contract_address;
 use starknet::providers::{JsonRpcClient, Provider, jsonrpc::HttpTransport};
 use url::Url;
 
-use snbeat::data::DataSource;
-use snbeat::data::rpc::RpcDataSource;
-use snbeat::data::types::SnTransaction;
+use starktop::data::DataSource;
+use starktop::data::rpc::RpcDataSource;
+use starktop::data::types::SnTransaction;
 
 fn provider() -> JsonRpcClient<HttpTransport> {
     dotenvy::dotenv().ok();

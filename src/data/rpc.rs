@@ -15,7 +15,7 @@ use url::Url;
 
 use super::DataSource;
 use super::types::*;
-use crate::error::{Result, SnbeatError};
+use crate::error::{Result, StarktopError};
 use crate::utils::felt_to_u128;
 
 /// RPC-based data source using starknet-rust Provider.
@@ -56,7 +56,7 @@ impl RpcDataSource {
             .provider
             .block_number()
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+            .map_err(|e| StarktopError::Provider(e.to_string()))?;
         // Upper bound for the reverse walk. Caller-specified `to_block` is
         // clamped to `latest` so requests for future blocks don't error out.
         let upper = to_block.map(|b| b.min(latest)).unwrap_or(latest);
@@ -124,7 +124,7 @@ impl RpcDataSource {
                     .provider
                     .get_events(filter.clone(), continuation_token.clone(), CHUNK_SIZE)
                     .await
-                    .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+                    .map_err(|e| StarktopError::Provider(e.to_string()))?;
 
                 for e in &page.events {
                     let bn = e.block_number.unwrap_or(0);
@@ -176,7 +176,7 @@ impl DataSource for RpcDataSource {
         self.provider
             .block_number()
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))
+            .map_err(|e| StarktopError::Provider(e.to_string()))
     }
 
     async fn get_block(&self, number: u64) -> Result<SnBlock> {
@@ -184,7 +184,7 @@ impl DataSource for RpcDataSource {
             .provider
             .get_block_with_txs(BlockId::Number(number), None)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+            .map_err(|e| StarktopError::Provider(e.to_string()))?;
 
         match block {
             MaybePreConfirmedBlockWithTxs::Block(b) => Ok(convert_block(&b)),
@@ -199,13 +199,13 @@ impl DataSource for RpcDataSource {
             .provider
             .get_block_with_txs(BlockId::Hash(hash), None)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+            .map_err(|e| StarktopError::Provider(e.to_string()))?;
 
         match block {
             MaybePreConfirmedBlockWithTxs::Block(b) => Ok(b.block_number),
-            MaybePreConfirmedBlockWithTxs::PreConfirmedBlock(_) => {
-                Err(SnbeatError::Provider("Block is pre-confirmed".to_string()))
-            }
+            MaybePreConfirmedBlockWithTxs::PreConfirmedBlock(_) => Err(StarktopError::Provider(
+                "Block is pre-confirmed".to_string(),
+            )),
         }
     }
 
@@ -214,7 +214,7 @@ impl DataSource for RpcDataSource {
             .provider
             .get_block_with_txs(BlockId::Number(number), None)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+            .map_err(|e| StarktopError::Provider(e.to_string()))?;
 
         match block {
             MaybePreConfirmedBlockWithTxs::Block(b) => {
@@ -247,7 +247,7 @@ impl DataSource for RpcDataSource {
             .provider
             .get_block_with_tx_hashes(BlockId::Number(number))
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+            .map_err(|e| StarktopError::Provider(e.to_string()))?;
 
         match block {
             MaybePreConfirmedBlockWithTxHashes::Block(b) => {
@@ -264,7 +264,7 @@ impl DataSource for RpcDataSource {
             .provider
             .get_transaction_by_hash(hash, None)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+            .map_err(|e| StarktopError::Provider(e.to_string()))?;
 
         Ok(convert_transaction(&tx, 0, 0))
     }
@@ -274,7 +274,7 @@ impl DataSource for RpcDataSource {
             .provider
             .get_transaction_receipt(hash)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+            .map_err(|e| StarktopError::Provider(e.to_string()))?;
 
         Ok(convert_receipt(
             &receipt_with_block.receipt,
@@ -286,28 +286,28 @@ impl DataSource for RpcDataSource {
         self.provider
             .get_nonce(BlockId::Tag(BlockTag::Latest), address)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))
+            .map_err(|e| StarktopError::Provider(e.to_string()))
     }
 
     async fn get_class_hash(&self, address: Felt) -> Result<Felt> {
         self.provider
             .get_class_hash_at(BlockId::Tag(BlockTag::Latest), address)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))
+            .map_err(|e| StarktopError::Provider(e.to_string()))
     }
 
     async fn get_class_hash_at(&self, address: Felt, block: u64) -> Result<Felt> {
         self.provider
             .get_class_hash_at(BlockId::Number(block), address)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))
+            .map_err(|e| StarktopError::Provider(e.to_string()))
     }
 
     async fn get_class(&self, class_hash: Felt) -> Result<ContractClass> {
         self.provider
             .get_class(BlockId::Tag(BlockTag::Latest), class_hash)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))
+            .map_err(|e| StarktopError::Provider(e.to_string()))
     }
 
     async fn get_storage_at(&self, contract: Felt, key: Felt, block: Option<u64>) -> Result<Felt> {
@@ -323,7 +323,7 @@ impl DataSource for RpcDataSource {
             .provider
             .get_storage_at(contract, key, block_id, None)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+            .map_err(|e| StarktopError::Provider(e.to_string()))?;
         Ok(result.value())
     }
 
@@ -331,7 +331,7 @@ impl DataSource for RpcDataSource {
         self.provider
             .trace_transaction(hash)
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))
+            .map_err(|e| StarktopError::Provider(e.to_string()))
     }
 
     async fn get_recent_blocks(&self, count: usize) -> Result<Vec<SnBlock>> {
@@ -452,7 +452,7 @@ impl DataSource for RpcDataSource {
                     .provider
                     .get_events(filter.clone(), continuation_token.clone(), CHUNK_SIZE)
                     .await
-                    .map_err(|e| SnbeatError::Provider(e.to_string()))?;
+                    .map_err(|e| StarktopError::Provider(e.to_string()))?;
                 for e in &page.events {
                     let raw = SnEvent {
                         from_address: e.from_address,
@@ -500,7 +500,7 @@ impl DataSource for RpcDataSource {
         self.provider
             .call(call, BlockId::Tag(BlockTag::Latest))
             .await
-            .map_err(|e| SnbeatError::Provider(e.to_string()))
+            .map_err(|e| StarktopError::Provider(e.to_string()))
     }
 
     async fn batch_call_contracts(
@@ -529,7 +529,7 @@ impl DataSource for RpcDataSource {
                 .into_iter()
                 .map(|resp| match resp {
                     ProviderResponseData::Call(v) => Ok(v),
-                    _ => Err(SnbeatError::Provider(
+                    _ => Err(StarktopError::Provider(
                         "unexpected response type in batch".into(),
                     )),
                 })
@@ -578,7 +578,7 @@ impl DataSource for RpcDataSource {
                 .into_iter()
                 .map(|resp| match resp {
                     ProviderResponseData::GetStorageAt(v) => Ok(v.value()),
-                    _ => Err(SnbeatError::Provider(
+                    _ => Err(StarktopError::Provider(
                         "unexpected response type in storage batch".into(),
                     )),
                 })
@@ -601,7 +601,7 @@ impl DataSource for RpcDataSource {
 // --- Type conversion helpers ---
 
 /// Map a starknet-rs `BlockStatus` to the canonical string representation
-/// used throughout snbeat (matches the `TransactionFinalityStatus` strings in
+/// used throughout starktop (matches the `TransactionFinalityStatus` strings in
 /// `convert_receipt`).
 fn block_status_str(status: &BlockStatus) -> &'static str {
     match status {

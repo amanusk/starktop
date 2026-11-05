@@ -5,7 +5,7 @@ use serde::Deserialize;
 use starknet::core::types::Felt;
 use tracing::{debug, warn};
 
-use crate::error::{Result, SnbeatError};
+use crate::error::{Result, StarktopError};
 
 /// User-editable labels file. Simple name mappings for addresses the user cares about.
 #[derive(Debug, Default, Deserialize)]
@@ -61,7 +61,7 @@ pub fn load_user_labels(path: &Path) -> Result<(Vec<UserLabel>, Vec<UserTxLabel>
     }
 
     let content = std::fs::read_to_string(path)
-        .map_err(|e| SnbeatError::Config(format!("Failed to read labels file: {e}")))?;
+        .map_err(|e| StarktopError::Config(format!("Failed to read labels file: {e}")))?;
 
     let file: UserLabelsFile = match toml::from_str(&content) {
         Ok(f) => f,

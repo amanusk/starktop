@@ -123,7 +123,7 @@ pub trait DataSource: Send + Sync {
         _key: Felt,
         _block: Option<u64>,
     ) -> Result<Felt> {
-        Err(crate::error::SnbeatError::Provider(
+        Err(crate::error::StarktopError::Provider(
             "get_storage_at not implemented for this DataSource".into(),
         ))
     }
@@ -241,7 +241,7 @@ pub trait DataSource: Send + Sync {
         _from_block: u64,
         _to_block: u64,
     ) -> Result<Vec<TokenTransfer>> {
-        Err(crate::error::SnbeatError::Provider(
+        Err(crate::error::StarktopError::Provider(
             "get_transfer_events not implemented for this DataSource".into(),
         ))
     }

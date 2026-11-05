@@ -1,6 +1,6 @@
-# snbeat
+# starktop
 
-snbeat is a local, terminal based, Block explorer for the Starknet Blockchain. It supports multiple data sources, to give the best experience, while prioritizing privacy, recency and caching.
+starktop is a local, terminal based, Block explorer for the Starknet Blockchain. It supports multiple data sources, to give the best experience, while prioritizing privacy, recency and caching.
 
 <table>
   <tr>
@@ -13,7 +13,7 @@ snbeat is a local, terminal based, Block explorer for the Starknet Blockchain. I
   </tr>
 </table>
 
-- Privacy first: snbeat works best with a local RPC node, and can connect directly to the Pathfinder DB. Fully local. External APIs (Dune/Voyager/Starkscan) can be used but are optional. It is open source. Hack any feature you need.
+- Privacy first: starktop works best with a local RPC node, and can connect directly to the Pathfinder DB. Fully local. External APIs (Dune/Voyager/Starkscan) can be used but are optional. It is open source. Hack any feature you need.
 - Cache first: Every fetched data is cached. Any data visited is cached for subsequent queries. No unnecessary indexing of data that is never used.
 - Recency first: See recent txs first, stream incoming txs, wait longer for full data fetch.
 - Vim!
@@ -41,26 +41,26 @@ snbeat is a local, terminal based, Block explorer for the Starknet Blockchain. I
 ### Install from crates.io
 
 ```bash
-cargo install snbeat
+cargo install starktop
 ```
 
 ### Install from git
 
 ```bash
-cargo install --git https://github.com/amanusk/snbeat
+cargo install --git https://github.com/amanusk/starktop
 ```
 
-Then place your config in `~/.config/snbeat/` (see [Configuration](#configuration) below).
+Then place your config in `~/.config/starktop/` (see [Configuration](#configuration) below).
 
 ### Build from source
 
 ```bash
-git clone https://github.com/amanusk/snbeat
-cd snbeat
+git clone https://github.com/amanusk/starktop
+cd starktop
 cargo build --release
 ```
 
-The binary is at `target/release/snbeat`.
+The binary is at `target/release/starktop`.
 
 ### Run
 
@@ -70,32 +70,32 @@ cp .env.example .env
 cargo run --release
 
 # Or directly
-./target/release/snbeat
+./target/release/starktop
 ```
 
-snbeat reads environment variables directly, so you can also export them in your shell or pass them inline:
+starktop reads environment variables directly, so you can also export them in your shell or pass them inline:
 
 ```bash
-APP_RPC_URL=https://api.zan.top/public/starknet-mainnet/rpc/v0_10 snbeat
+APP_RPC_URL=https://api.zan.top/public/starknet-mainnet/rpc/v0_10 starktop
 ```
 
 ---
 
 ## Configuration
 
-snbeat looks for configuration files in two locations, with local files taking priority:
+starktop looks for configuration files in two locations, with local files taking priority:
 
 1. **Current working directory** - for development or per-project setups
-2. **`~/.config/snbeat/`** - for system-wide installs (e.g. `cargo install`)
+2. **`~/.config/starktop/`** - for system-wide installs (e.g. `cargo install`)
 
-This applies to both `.env` and `labels.toml`. If a file exists in the current directory it is used; otherwise snbeat falls back to `~/.config/snbeat/`.
+This applies to both `.env` and `labels.toml`. If a file exists in the current directory it is used; otherwise starktop falls back to `~/.config/starktop/`.
 
 ### Quick setup (cargo install)
 
 ```bash
-mkdir -p ~/.config/snbeat
-cp .env.example ~/.config/snbeat/.env
-# Edit ~/.config/snbeat/.env with your settings
+mkdir -p ~/.config/starktop
+cp .env.example ~/.config/starktop/.env
+# Edit ~/.config/starktop/.env with your settings
 ```
 
 ### Environment variables
@@ -115,13 +115,13 @@ All variables are optional except `APP_RPC_URL`.
 | `APP_USER_LABELS`            | `labels.toml`           | Path to your custom labels file                |
 | `APP_VIEWING_KEYS`           | `viewing_keys.toml`     | Path to privacy-pool viewing keys (held separately because they are secrets) |
 | `APP_LOG_LEVEL`              | `info`                  | `trace` / `debug` / `info` / `warn` / `error`  |
-| `APP_LOG_DIR`                | `~/.config/snbeat/logs` | Log file directory                             |
+| `APP_LOG_DIR`                | `~/.config/starktop/logs` | Log file directory                             |
 
 ---
 
 ## Custom Labels
 
-Create a `labels.toml` file to tag addresses and transactions with names and searchable tags. Place it in the current directory or in `~/.config/snbeat/labels.toml` for a global install.
+Create a `labels.toml` file to tag addresses and transactions with names and searchable tags. Place it in the current directory or in `~/.config/starktop/labels.toml` for a global install.
 
 ```toml
 [addresses]
@@ -142,13 +142,13 @@ User labels take priority over the built-in known address registry (tokens, DEXe
 
 ## ABI Decoding
 
-snbeat fetches the class ABI for every contract it encounters and decodes:
+starktop fetches the class ABI for every contract it encounters and decodes:
 
 - **Calldata** - function arguments with named parameters and typed values (u256, structs, enums, arrays, …)
 - **Multicalls** - account transactions that bundle multiple inner calls are unpacked individually
 - **Events** - keys and data fields are matched against the ABI and rendered with parameter names
 
-Decoded ABIs are stored in the local SQLite cache (`~/.config/snbeat/cache.db`) and are never re-fetched.
+Decoded ABIs are stored in the local SQLite cache (`~/.config/starktop/cache.db`) and are never re-fetched.
 
 Press `d` in a transaction detail view to toggle between raw and decoded calldata.
 
@@ -156,7 +156,7 @@ Press `d` in a transaction detail view to toggle between raw and decoded calldat
 
 ## Local Cache
 
-All fetched data is persisted to `~/.config/snbeat/cache.db` (SQLite). The cache stores:
+All fetched data is persisted to `~/.config/starktop/cache.db` (SQLite). The cache stores:
 
 - Block headers
 - Transactions and receipts
@@ -242,7 +242,7 @@ Press `v` from a TxDetail, BlockDetail, AddressInfo, or ClassInfo view to enter 
 
 ## Data Backends
 
-snbeat can draw data from multiple sources simultaneously. Configure only the ones you have access to.
+starktop can draw data from multiple sources simultaneously. Configure only the ones you have access to.
 
 ### Data source matrix
 
@@ -343,7 +343,7 @@ VOYAGER_API_KEY=your_key_here
 
 A Starkscan API key powers the address **Transfers** tab: every ERC-20 transfer where the address is sender or recipient, newest-first, with token symbol, decimals and the USD value at transfer time as indexed by Starkscan.
 
-The key is the only setting required. snbeat sends it as the `X-Starkscan-Api-Key` header to `https://api.starkscan.co/v1/SN_MAIN/address/{address}/transfers`:
+The key is the only setting required. starktop sends it as the `X-Starkscan-Api-Key` header to `https://api.starkscan.co/v1/SN_MAIN/address/{address}/transfers`:
 
 ```
 STARKSCAN_API_KEY=your_key_here
@@ -378,7 +378,7 @@ PF_DB_PATH=/var/lib/pathfinder/pathfinder.db ./target/release/pf-query
 
 ### Run on a remote server
 
-If your Pathfinder node is on a different machine, run `pf-query` on that machine and set `APP_PATHFINDER_SERVICE_URL` in your snbeat `.env` to point at it:
+If your Pathfinder node is on a different machine, run `pf-query` on that machine and set `APP_PATHFINDER_SERVICE_URL` in your starktop `.env` to point at it:
 
 ```
 APP_PATHFINDER_SERVICE_URL=http://192.168.1.10:8234

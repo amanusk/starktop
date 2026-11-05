@@ -1,6 +1,6 @@
 [workspace]
 members = [".", "crates/pf-query"]
-# Only build the snbeat binary by default. pf-query is a separate companion
+# Only build the starktop binary by default. pf-query is a separate companion
 # service with its own (heavy) dep tree (axum, rayon, tower-http, zstd,
 # bincode, primitive-types, …). Skipping it by default keeps a plain
 # `cargo build` / `cargo build --release` from compiling all of that into
@@ -19,13 +19,13 @@ codegen-units = 1
 strip = "symbols"
 
 [package]
-name = "snbeat"
-version = "0.7.1"
+name = "starktop"
+version = "0.8.1"
 edition = "2024"
 description = "A TUI block explorer for the Starknet blockchain"
 license = "MIT"
-repository = "https://github.com/amanusk/snbeat"
-homepage = "https://github.com/amanusk/snbeat"
+repository = "https://github.com/amanusk/starktop"
+homepage = "https://github.com/amanusk/starktop"
 readme = "README.md"
 keywords = ["starknet", "blockchain", "tui", "explorer", "terminal"]
 categories = ["command-line-utilities"]

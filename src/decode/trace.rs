@@ -1,6 +1,6 @@
 //! Decode the recursive call tree returned by `starknet_traceTransaction`.
 //!
-//! Maps `starknet::core::types::TransactionTrace` to a snbeat-flavored
+//! Maps `starknet::core::types::TransactionTrace` to a starktop-flavored
 //! `DecodedTrace` that mirrors the RPC tree but with each node enriched
 //! with ABI-resolved function names, definitions, and decoded events.
 //!

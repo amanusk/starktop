@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum SnbeatError {
+pub enum StarktopError {
     #[error("RPC error: {0}")]
     Rpc(String),
 
@@ -33,22 +33,22 @@ pub enum SnbeatError {
     Other(String),
 }
 
-impl From<serde_json::Error> for SnbeatError {
+impl From<serde_json::Error> for StarktopError {
     fn from(e: serde_json::Error) -> Self {
-        SnbeatError::Serialization(e.to_string())
+        StarktopError::Serialization(e.to_string())
     }
 }
 
-impl From<reqwest::Error> for SnbeatError {
+impl From<reqwest::Error> for StarktopError {
     fn from(e: reqwest::Error) -> Self {
-        SnbeatError::Rpc(e.to_string())
+        StarktopError::Rpc(e.to_string())
     }
 }
 
-impl From<toml::de::Error> for SnbeatError {
+impl From<toml::de::Error> for StarktopError {
     fn from(e: toml::de::Error) -> Self {
-        SnbeatError::Config(e.to_string())
+        StarktopError::Config(e.to_string())
     }
 }
 
-pub type Result<T> = std::result::Result<T, SnbeatError>;
+pub type Result<T> = std::result::Result<T, StarktopError>;

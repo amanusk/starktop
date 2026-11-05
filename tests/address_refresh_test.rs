@@ -10,10 +10,10 @@
 use starknet::core::types::Felt;
 use tokio::sync::mpsc;
 
-use snbeat::app::App;
-use snbeat::app::actions::{Action, Source};
-use snbeat::app::state::{SourceStatus, View};
-use snbeat::data::types::{AddressTxSummary, SnAddressInfo};
+use starktop::app::App;
+use starktop::app::actions::{Action, Source};
+use starktop::app::state::{SourceStatus, View};
+use starktop::data::types::{AddressTxSummary, SnAddressInfo};
 
 fn make_app() -> (App, mpsc::UnboundedReceiver<Action>) {
     let (tx, rx) = mpsc::unbounded_channel();
