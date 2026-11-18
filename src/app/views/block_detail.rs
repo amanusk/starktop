@@ -51,7 +51,7 @@ impl BlockDetailState {
     }
 }
 
-/// Guess each tx's 200ms batch (1-based, in tx-index order). Within a batch the
+/// Guess each tx's 200ms batch (0-based, in tx-index order). Within a batch the
 /// sequencer orders by descending tip, so a tip increase marks a new batch.
 pub fn estimate_batches(starknet_version: &str, txs: &[SnTransaction]) -> Vec<u32> {
     if !has_tip_ordering(starknet_version) {
@@ -74,7 +74,7 @@ fn has_tip_ordering(version: &str) -> bool {
 
 /// Untipped txs (`None`) stay in the current batch and don't reset the comparison.
 fn batches_from_tips(tips: impl Iterator<Item = Option<u64>>) -> Vec<u32> {
-    let mut batch = 1;
+    let mut batch = 0;
     let mut prev_tip = None;
     tips.map(|tip| {
         if let Some(tip) = tip {
@@ -142,13 +142,13 @@ mod tests {
         let batches = batches_from_tips(tips.into_iter().map(Some));
         let sizes: Vec<usize> = batches.chunk_by(|a, b| a == b).map(<[u32]>::len).collect();
         assert_eq!(sizes, [1, 3, 10, 8, 20]);
-        assert_eq!(batches.last(), Some(&5));
+        assert_eq!(batches.last(), Some(&4));
     }
 
     #[test]
     fn untipped_txs_do_not_split_batches() {
         let tips = [Some(50), None, Some(40), None, Some(60)];
-        assert_eq!(batches_from_tips(tips.into_iter()), [1, 1, 1, 1, 2]);
+        assert_eq!(batches_from_tips(tips.into_iter()), [0, 0, 0, 0, 1]);
     }
 
     #[test]
