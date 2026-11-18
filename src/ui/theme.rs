@@ -70,6 +70,11 @@ pub const TITLE_STYLE: Style = Style::new().fg(Color::Cyan).add_modifier(Modifie
 pub const BORDER_STYLE: Style = Style::new().fg(Color::DarkGray);
 pub const BORDER_FOCUSED_STYLE: Style = Style::new().fg(Color::Cyan);
 
+// Estimated sequencer batch boundary in the block tx list.
+pub const BATCH_BOUNDARY_STYLE: Style = Style::new()
+    .add_modifier(Modifier::UNDERLINED)
+    .underline_color(Color::DarkGray);
+
 // Per-address color palette. Used for "spot the repeat" highlighting across
 // list views (block tx list, address-info Txs/Calls tabs, tx detail). All
 // slots are plain (non-bold) so unlabeled, non-special addresses don't draw

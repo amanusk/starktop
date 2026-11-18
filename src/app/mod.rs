@@ -1240,8 +1240,11 @@ impl App {
                 mut meta_tx_info,
                 mut is_privacy_tx,
             } => {
+                let mut batches =
+                    views::block_detail::estimate_batches(&block.starknet_version, &transactions);
                 self.block_detail.block = Some(block);
                 // Reverse to show highest index first (descending order)
+                batches.reverse();
                 transactions.reverse();
                 endpoint_names.reverse();
                 tx_statuses.reverse();
@@ -1252,6 +1255,7 @@ impl App {
                 self.block_detail.tx_statuses = tx_statuses;
                 self.block_detail.meta_tx_info = meta_tx_info;
                 self.block_detail.is_privacy_tx = is_privacy_tx;
+                self.block_detail.batches = batches;
 
                 // If a wrap-to-boundary is pending (Ctrl+P/N at the first/last
                 // tx of the prior block), pick the corresponding tx and stay

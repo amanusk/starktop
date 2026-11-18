@@ -118,7 +118,7 @@ fn draw_tx_list(f: &mut Frame, app: &mut App, area: ratatui::layout::Rect) {
         ..area
     };
     let header = Paragraph::new(Line::from(vec![
-        Span::styled("      Idx  ", theme::SUGGESTION_STYLE),
+        Span::styled("          Idx  ", theme::SUGGESTION_STYLE),
         Span::styled("St  ", theme::SUGGESTION_STYLE),
         Span::styled("Prv ", theme::SUGGESTION_STYLE),
         Span::styled("Type            ", theme::SUGGESTION_STYLE),
@@ -308,8 +308,15 @@ fn draw_tx_list(f: &mut Frame, app: &mut App, area: ratatui::layout::Rect) {
             // for a 4-cell total.
             let prv_marker_text = if is_priv { "🛡   " } else { "    " };
 
+            // Display order is descending, so a batch's first tx sits just above the boundary.
+            let batches = &app.block_detail.batches;
+            let batch = batches.get(i);
+            let batch_str = batch.map(u32::to_string).unwrap_or_default();
+            let starts_batch = batch.zip(batches.get(i + 1)).is_some_and(|(a, b)| a != b);
+
             let line = Line::from(vec![
                 Span::styled(format!(" {marker}"), theme::NORMAL_STYLE),
+                Span::styled(format!("{batch_str:>2} "), theme::SUGGESTION_STYLE),
                 Span::styled(format!("{:<4} ", tx.index()), theme::BLOCK_NUMBER_STYLE),
                 Span::styled(format!("{:<4}", status), status_style),
                 Span::styled(prv_marker_text, theme::PRIVACY_STYLE),
@@ -323,7 +330,12 @@ fn draw_tx_list(f: &mut Frame, app: &mut App, area: ratatui::layout::Rect) {
                 Span::styled(format!("{:<17}", fee_str), theme::TX_FEE_STYLE),
                 Span::styled(format!("{:<16}", tip_str), theme::TX_FEE_STYLE),
             ]);
-            ListItem::new(line)
+            let item = ListItem::new(line);
+            if starts_batch {
+                item.style(theme::BATCH_BOUNDARY_STYLE)
+            } else {
+                item
+            }
         })
         .collect();
 
